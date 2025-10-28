@@ -87,12 +87,13 @@ func AttrsPutById(operator engine2.DatabaseOperator, id string, data []byte, nam
 	now := time.Now().Unix() // 获取当前时间
 	// 这里的原本逻辑是：第一次全量创建，第二次修改部分属性
 	// 所以使用了Attrs和Assign配合使用
+	wrapped := dbutil.BYTE(data)
 	if err := db.Where("id = ?", id).
 		Attrs(map[string]any{
 			// 第一次全量建表
 			"id": id,
 			// 使用BYTE规避无法插入的问题
-			"data":             dbutil.BYTE(data),
+			"data":             &wrapped,
 			"is_hidden":        true,
 			"binding_sheet_id": "",
 			"name":             name,
@@ -102,7 +103,7 @@ func AttrsPutById(operator engine2.DatabaseOperator, id string, data []byte, nam
 		}).
 		// 如果是更新的情况，更新下面这部分，则需要被更新的为：
 		Assign(map[string]any{
-			"data":       dbutil.BYTE(data),
+			"data":       &wrapped,
 			"updated_at": now,
 			"name":       name,
 			"sheet_type": sheetType,

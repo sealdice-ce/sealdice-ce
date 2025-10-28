@@ -18,17 +18,18 @@ func BanItemDel(operator engine2.DatabaseOperator, id string) error {
 // BanItemSave 保存或替换禁用项 这里的[]byte也是json反序列化产物
 func BanItemSave(operator engine2.DatabaseOperator, id string, updatedAt int64, banUpdatedAt int64, data []byte) error {
 	db := operator.GetDataDB(constant.WRITE)
+	wrapped := dbutil.BYTE(data)
 	// 使用 FirstOrCreate ，这里显然，第一次初始化的时候替换ID，而剩余的时候只换ID以外的数据
 	if err := db.Where("id = ?", id).Attrs(map[string]any{
 		"id":             id,
 		"updated_at":     int(updatedAt),
 		"ban_updated_at": int(banUpdatedAt), // 只在创建时设置的字段
-		"data":           dbutil.BYTE(data), // 禁用项数据
+		"data":           &wrapped,          // 禁用项数据
 	}).
 		Assign(map[string]any{
 			"updated_at":     int(updatedAt),
 			"ban_updated_at": int(banUpdatedAt), // 只在创建时设置的字段
-			"data":           dbutil.BYTE(data), // 禁用项数据
+			"data":           &wrapped,          // 禁用项数据
 		}).FirstOrCreate(&model.BanInfo{}).Error; err != nil {
 		return err // 返回错误
 	}
