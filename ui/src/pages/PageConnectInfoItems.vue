@@ -1088,8 +1088,6 @@ const getSignInfo = async () => {
   }
 };
 
-const supportedQQVersions = ref<string[]>([]);
-
 const form = reactive({
   accountType: 15,
   step: 1,
